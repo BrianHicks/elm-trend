@@ -120,31 +120,30 @@ linearTest =
         ]
 
 
-
--- goodnessOfFitTests : Test
--- goodnessOfFitTests =
---     describe "goodnessOfFit"
---         [ fuzz Fuzz.float "good fit" <|
---             \i ->
---                 let
---                     values =
---                         [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
---                 in
---                 linear values
---                     |> Maybe.andThen (\fit -> goodnessOfFit fit values)
---                     |> Expect.equal (Just 1)
---         , fuzz Fuzz.float "bad fit" <|
---             \i ->
---                 let
---                     values =
---                         [ ( 0, i ), ( 0, -i ), ( i, 0 ), ( -i, 0 ) ]
---                 in
---                 linear values
---                     |> Maybe.andThen (\fit -> goodnessOfFit fit values)
---                     |> Expect.equal
---                         (if i == 0 then
---                             Nothing
---                          else
---                             Just 0
---                         )
---         ]
+goodnessOfFitTests : Test
+goodnessOfFitTests =
+    describe "goodnessOfFit"
+        [ fuzz Fuzz.float "good fit" <|
+            \i ->
+                let
+                    values =
+                        [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
+                in
+                linear values
+                    |> Result.andThen (\fit -> goodnessOfFit fit values)
+                    |> Expect.equal (Ok 1)
+        , fuzz Fuzz.float "bad fit" <|
+            \i ->
+                let
+                    values =
+                        [ ( 0, i ), ( 0, -i ), ( i, 0 ), ( -i, 0 ) ]
+                in
+                linear values
+                    |> Result.andThen (\fit -> goodnessOfFit fit values)
+                    |> Expect.equal
+                        (if i == 0 then
+                            Err ResultWasNaN
+                         else
+                            Ok 0
+                        )
+        ]

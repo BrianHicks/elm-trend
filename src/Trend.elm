@@ -1,8 +1,20 @@
-module Trend exposing (Error(..), LinearFit, linear)
+module Trend
+    exposing
+        ( Error(..)
+        , LinearFit
+        , goodnessOfFit
+        , linear
+        , predictY
+        )
 
 {-| Calculate trend lines given 2-dimensonal data.
 
 @docs linear, LinearFit
+
+
+## Using Fits
+
+@docs goodnessOfFit, predictY
 
 
 ## Errors
@@ -157,11 +169,36 @@ linear values =
             Result.map2 LinearFit slope intercept
 
 
+{-| Predict a value of `y` from a [`LinearFit`](#LinearFit) calculated
+with [`linear`](#linear) and a value of `x`.
+
+    linear [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+        |> Result.map (\fit -> predictY fit 5)
+        --> Ok 5
+
+-}
 predictY : LinearFit -> Float -> Float
 predictY fit x =
     fit.slope * x + fit.intercept
 
 
+{-| How good is the fit that [`linear`](#linear) generated? We can
+give you a confidence between 0 and 1 representing a percent
+confidence. Practically, we'll usually return a value between almost 0
+and almost 1.
+
+    values : List (Float, Float)
+    values =
+        [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+
+    linear values
+        |> Result.andThen (\fit -> goodnessOfFit fit values)
+        --> Ok 1
+
+Statistically speaking, this is the R-squared value of the linear
+regression.
+
+-}
 goodnessOfFit : LinearFit -> List ( Float, Float ) -> Result Error Float
 goodnessOfFit fit values =
     case values of
