@@ -1,5 +1,5 @@
 .PHONY: all
-all: documentation.json
+all: documentation.json test
 
 .PHONY: deps
 deps: elm-stuff tests/elm-stuff
