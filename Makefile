@@ -21,7 +21,7 @@ documentation.json: elm-stuff $(wildcard src/*.elm) node_modules
 
 .PHONY: test
 test: tests/elm-stuff tests/Doc node_modules
-	node_modules/.bin/elm-test
+	node_modules/.bin/elm-test --compiler node_modules/.bin/elm-make
 
 tests/Doc: $(wildcard src/*.elm) tests/elm-verify-examples.json node_modules
 	node_modules/.bin/elm-verify-examples
