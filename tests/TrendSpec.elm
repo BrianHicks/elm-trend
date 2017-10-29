@@ -113,7 +113,7 @@ linearTest =
                 linear [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
                     |> Expect.equal
                         (if i == 0 then
-                            Err NotEnoughData
+                            Err ResultWasNaN
                          else
                             Ok { slope = 0, intercept = 0 }
                         )

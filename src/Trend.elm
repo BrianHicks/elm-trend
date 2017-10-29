@@ -18,10 +18,14 @@ trend line. Specifically:
   - `NotEnoughData`: there was not enough data to calculate a trend. The
     number attached is the minimum number of points needed to
     calculate.
+  - `ResultWasNaN`: this likely means you've tried to plot a point
+    through a bunch of zeroes, or a bunch of values that are very very
+    close to zero. If that's not the case, please open an issue.
 
 -}
 type Error
     = NotEnoughData
+    | ResultWasNaN
 
 
 mean : List Float -> Result Error Float
@@ -83,7 +87,7 @@ correlation values =
                 |> Result.andThen
                     (\val ->
                         if isNaN val then
-                            Err NotEnoughData
+                            Err ResultWasNaN
                         else
                             Ok val
                     )
