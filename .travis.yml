@@ -23,7 +23,7 @@ install:
       cd ..;
     fi
 
-  - make deps
+  - env PATH=$PATH:node_modules/.bin make deps
 
 script:
   - $TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 make documentation.json
