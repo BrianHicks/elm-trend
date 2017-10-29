@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Trend",
+    "comment": " Calculate trend lines given 2-dimensonal data.\n\n@docs linear, LinearFit\n\n",
+    "aliases": [
+      {
+        "name": "LinearFit",
+        "comment": " A line plotted through points. Get one by passing your data to\n[`linear`](#linear).\n\nTODO: prediction functions, goodness of fit\n\n",
+        "args": [],
+        "type": "{ slope : Float, intercept : Float }"
+      }
+    ],
+    "types": [],
+    "values": [
+      {
+        "name": "linear",
+        "comment": " Plot a line through a series of points `(x, y)`.\n\n    -- TODO: example\n\nUse this in situations where the relationship between `x` and `y` is\nlinear and has as few outliers as possible. A relationship is linear\nif it can be described accurately as `y = x * slope + intercept`. The\neasiest way to determine this is to look at a plot of your values. If\nthey look roughly like a line, we're in business. But if your plot\nshows a curve or a random point cloud then don't trust the results of\nthis function applied to them. (See [`goodnessOfFit`](#goodnessOfFit)\nfor an estimation of this, regardless.)\n\nExamples of good linear relationships:\n\n  - relationship of some value to time. For example, are bananas\n    getting cheaper or more expensive as time goes on?\n  - relationships where doing something more or less leads to doing\n    something else more or less. For example, does smoking more\n    decrease your life expectancy?\n\n",
+        "type": "List ( Float, Float ) -> Maybe.Maybe Trend.LinearFit"
+      }
+    ],
+    "generated-with-elm-version": "0.18.0"
+  }
+]
