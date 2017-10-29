@@ -1,0 +1,27 @@
+{
+  "name": "elm-trend",
+  "version": "1.0.0",
+  "description": "Generate trend lines from point data.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrianHicks/elm-trend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BrianHicks/elm-trend/issues"
+  },
+  "homepage": "https://github.com/BrianHicks/elm-trend#readme",
+  "dependencies": {
+    "elm": "^0.18.0",
+    "elm-test": "^0.18.9",
+    "elm-verify-examples": "^1.0.2"
+  }
+}

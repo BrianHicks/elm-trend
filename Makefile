@@ -2,22 +2,31 @@
 all: documentation.json test
 
 .PHONY: deps
-deps: elm-stuff tests/elm-stuff
+deps: elm-stuff tests/elm-stuff node_modules
 
-elm-stuff: elm-package.json
-	elm-package install --yes
+.PHONY: clean
+clean:
+	rm -rf elm-stuff tests/elm-stuff node_modules documentation.json tests/Doc
+
+node_modules: package.json
+	npm install
 	touch -m $@
 
-documentation.json: elm-stuff $(wildcard src/*.elm)
-	elm make --docs=$@
+elm-stuff: elm-package.json node_modules
+	node_modules/.bin/elm-package install --yes
+	touch -m $@
+
+documentation.json: elm-stuff $(wildcard src/*.elm) node_modules
+	node_modules/.bin/elm-make --docs=$@
 
 .PHONY: test
-test: tests/elm-stuff
-	elm test
+test: tests/elm-stuff tests/Doc node_modules
+	node_modules/.bin/elm-test
 
-tests/Doc: $(wildcard src/*.elm) tests/elm-verify-examples.json
-	elm-verify-examples
+tests/Doc: $(wildcard src/*.elm) tests/elm-verify-examples.json node_modules
+	node_modules/.bin/elm-verify-examples
+	touch -m $@
 
-tests/elm-stuff: tests/elm-package.json tests/Doc
-	cd tests; elm-package install --yes
+tests/elm-stuff: tests/elm-package.json node_modules
+	cd tests; ../node_modules/.bin/elm-package install --yes
 	touch -m $@
