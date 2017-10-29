@@ -92,8 +92,7 @@ if it can be described accurately as `y = x * slope + intercept`. The
 easiest way to determine this is to look at a plot of your values. If
 they look roughly like a line, we're in business. But if your plot
 shows a curve or a random point cloud then don't trust the results of
-this function applied to them. (See [`goodnessOfFit`](#goodnessOfFit)
-for an estimation of this, regardless.)
+this function applied to them.
 
 Examples of good linear relationships:
 
