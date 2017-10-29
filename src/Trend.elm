@@ -84,7 +84,8 @@ type alias LinearFit =
 
 {-| Plot a line through a series of points `(x, y)`.
 
-    -- TODO: example
+     linear [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+         --> Just { slope = 1, intercept = 0 }
 
 Use this in situations where the relationship between `x` and `y` is
 linear and has as few outliers as possible. A relationship is linear

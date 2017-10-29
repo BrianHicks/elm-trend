@@ -15,6 +15,9 @@ documentation.json: elm-stuff $(wildcard src/*.elm)
 test: tests/elm-stuff
 	elm test
 
-tests/elm-stuff: tests/elm-package.json
+tests/Doc: $(wildcard src/*.elm) tests/elm-verify-examples.json
+	elm-verify-examples
+
+tests/elm-stuff: tests/elm-package.json tests/Doc
 	cd tests; elm-package install --yes
 	touch -m $@
