@@ -1,4 +1,4 @@
-.PHONY:
+.PHONY: all
 all: documentation.json
 
 elm-stuff: elm-package.json
@@ -7,3 +7,7 @@ elm-stuff: elm-package.json
 
 documentation.json: elm-stuff $(wildcard src/*.elm)
 	elm make --docs=$@
+
+.PHONY: test
+test: elm-package.json
+	elm test
