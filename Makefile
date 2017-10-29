@@ -5,5 +5,5 @@ elm-stuff: elm-package.json
 	elm-package install --yes
 	touch -m $@
 
-documentation.json: elm-stuff
+documentation.json: elm-stuff $(wildcard src/*.elm)
 	elm make --docs=$@
