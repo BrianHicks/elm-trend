@@ -13,7 +13,7 @@ node_modules: package.json
 	touch -m $@
 
 elm-stuff: elm-package.json node_modules
-	node_modules/.bin/elm-package install --yes
+	env PATH=node_modules/.bin:${PATH} elm package install --yes
 	touch -m $@
 
 documentation.json: elm-stuff $(wildcard src/*.elm) node_modules
@@ -28,5 +28,5 @@ tests/Doc: $(wildcard src/*.elm) tests/elm-verify-examples.json node_modules
 	touch -m $@
 
 tests/elm-stuff: tests/elm-package.json node_modules
-	cd tests; ../node_modules/.bin/elm-package install --yes
+	cd tests; env PATH=../node_modules/.bin:${PATH} elm package install --yes
 	touch -m $@
