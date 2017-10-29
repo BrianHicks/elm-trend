@@ -136,6 +136,8 @@ Examples of good linear relationships:
     something else more or less. For example, does smoking more
     decrease your life expectancy?
 
+Statistically speaking, this is a least-squares linear regression.
+
 -}
 linear : List ( Float, Float ) -> Result Error LinearFit
 linear values =
