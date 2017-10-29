@@ -108,7 +108,8 @@ correlation values =
 {-| A line plotted through points. Get one by passing your data to
 [`linear`](#linear).
 
-TODO: prediction functions, goodness of fit
+Make predictions using this and [`predictY`](#predictY) and measure
+accuracy with [`goodnessOfFit`](#goodnessOfFit).
 
 -}
 type alias LinearFit =
@@ -128,7 +129,7 @@ they look roughly like a line, we're in business. But if your plot
 shows a curve or a random point cloud then don't trust the results of
 this function applied to them.
 
-Examples of good linear relationships:
+Examples of data which fit these criteria:
 
   - relationship of some value to time. For example, are bananas
     getting cheaper or more expensive as time goes on?
@@ -136,7 +137,7 @@ Examples of good linear relationships:
     something else more or less. For example, does smoking more
     decrease your life expectancy?
 
-Statistically speaking, this is a least-squares linear regression.
+Statistically speaking, this is a least-squares regression.
 
 -}
 linear : List ( Float, Float ) -> Result Error LinearFit
