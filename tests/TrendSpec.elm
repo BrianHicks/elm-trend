@@ -6,13 +6,13 @@ import Test exposing (..)
 import Trend exposing (..)
 
 
-reasonablyCloseTo : Float -> Maybe Float -> Expectation
+reasonablyCloseTo : Float -> Result x Float -> Expectation
 reasonablyCloseTo target maybeActual =
     case maybeActual of
-        Nothing ->
-            Expect.fail <| "got a null result (Nothing) instead of " ++ toString target
+        Err err ->
+            Expect.fail <| "got an error result (" ++ toString err ++ ") instead of " ++ toString target
 
-        Just actual ->
+        Ok actual ->
             if target - 0.001 <= actual && actual <= target + 0.001 then
                 Expect.pass
             else
@@ -85,13 +85,13 @@ linearTest =
                 \i ->
                     [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
                         |> linear
-                        |> Maybe.map .slope
+                        |> Result.map .slope
                         |> reasonablyCloseTo 1
             , fuzz Fuzz.float "intercept" <|
                 \i ->
                     [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
                         |> linear
-                        |> Maybe.map .intercept
+                        |> Result.map .intercept
                         |> reasonablyCloseTo 0
             ]
         , describe "strong negative correlation" <|
@@ -99,13 +99,13 @@ linearTest =
                 \i ->
                     [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
                         |> linear
-                        |> Maybe.map .slope
+                        |> Result.map .slope
                         |> reasonablyCloseTo -1
             , fuzz (Fuzz.floatRange -1.0e6 1.0e6) "intercept" <|
                 \i ->
                     [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
                         |> linear
-                        |> Maybe.map .intercept
+                        |> Result.map .intercept
                         |> reasonablyCloseTo (i * 2)
             ]
         , fuzz Fuzz.float "no correlation" <|
@@ -113,9 +113,9 @@ linearTest =
                 linear [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
                     |> Expect.equal
                         (if i == 0 then
-                            Nothing
+                            Err NotEnoughData
                          else
-                            Just { slope = 0, intercept = 0 }
+                            Ok { slope = 0, intercept = 0 }
                         )
         ]
 

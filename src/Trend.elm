@@ -1,45 +1,62 @@
-module Trend exposing (LinearFit, linear)
+module Trend exposing (Error(..), LinearFit, linear)
 
 {-| Calculate trend lines given 2-dimensonal data.
 
 @docs linear, LinearFit
 
+
+## Errors
+
+@docs Error
+
 -}
 
 
-mean : List Float -> Maybe Float
+{-| Indicate that something has gone wrong in the caculation of a
+trend line. Specifically:
+
+  - `NotEnoughData`: there was not enough data to calculate a trend. The
+    number attached is the minimum number of points needed to
+    calculate.
+
+-}
+type Error
+    = NotEnoughData
+
+
+mean : List Float -> Result Error Float
 mean numbers =
     case numbers of
         [] ->
-            Nothing
+            Err NotEnoughData
 
         _ ->
-            Just <| List.sum numbers / toFloat (List.length numbers)
+            Ok <| List.sum numbers / toFloat (List.length numbers)
 
 
-stddev : List Float -> Maybe Float
+stddev : List Float -> Result Error Float
 stddev numbers =
     let
-        helper : Float -> Maybe Float
+        helper : Float -> Result Error Float
         helper seriesMean =
             numbers
                 |> List.map (\n -> (n - seriesMean) ^ 2)
                 |> mean
-                |> Maybe.map sqrt
+                |> Result.map sqrt
     in
-    mean numbers |> Maybe.andThen helper
+    mean numbers |> Result.andThen helper
 
 
-correlation : List ( Float, Float ) -> Maybe Float
+correlation : List ( Float, Float ) -> Result Error Float
 correlation values =
     case values of
         -- you can't get a correlation out of no data points
         [] ->
-            Nothing
+            Err NotEnoughData
 
         -- you can't get a correlation out of a single data point
         _ :: [] ->
-            Nothing
+            Err NotEnoughData
 
         -- two or more? That's more like it.
         _ ->
@@ -47,28 +64,28 @@ correlation values =
                 ( xs, ys ) =
                     List.unzip values
 
-                standardize : Maybe Float -> Maybe Float -> List Float -> Maybe (List Float)
-                standardize maybeMean maybeStddev series =
-                    Maybe.map2
+                standardize : Result Error Float -> Result Error Float -> List Float -> Result Error (List Float)
+                standardize meanResult stddevResult series =
+                    Result.map2
                         (\mean stddev -> List.map (\point -> (point - mean) / stddev) series)
-                        maybeMean
-                        maybeStddev
+                        meanResult
+                        stddevResult
 
                 summedProduct =
-                    Maybe.map2
+                    Result.map2
                         (\stdX stdY -> List.map2 (*) stdX stdY)
                         (standardize (mean xs) (stddev xs) xs)
                         (standardize (mean ys) (stddev ys) ys)
-                        |> Maybe.map List.sum
+                        |> Result.map List.sum
             in
             summedProduct
-                |> Maybe.map (\sum -> sum / toFloat (List.length values))
-                |> Maybe.andThen
+                |> Result.map (\sum -> sum / toFloat (List.length values))
+                |> Result.andThen
                     (\val ->
                         if isNaN val then
-                            Nothing
+                            Err NotEnoughData
                         else
-                            Just val
+                            Ok val
                     )
 
 
@@ -85,7 +102,7 @@ type alias LinearFit =
 {-| Plot a line through a series of points `(x, y)`.
 
      linear [ (1, 1), (2, 2), (3, 3), (4, 4) ]
-         --> Just { slope = 1, intercept = 0 }
+         --> Ok { slope = 1, intercept = 0 }
 
 Use this in situations where the relationship between `x` and `y` is
 linear and has as few outliers as possible. A relationship is linear
@@ -104,16 +121,16 @@ Examples of good linear relationships:
     decrease your life expectancy?
 
 -}
-linear : List ( Float, Float ) -> Maybe LinearFit
+linear : List ( Float, Float ) -> Result Error LinearFit
 linear values =
     case values of
         -- can't draw a line through no values
         [] ->
-            Nothing
+            Err NotEnoughData
 
         -- also can't draw a line through a single value
         _ :: [] ->
-            Nothing
+            Err NotEnoughData
 
         -- we've got two or more, let's go!
         _ ->
@@ -122,18 +139,18 @@ linear values =
                     List.unzip values
 
                 slope =
-                    Maybe.map3 (\correl stddevY stddevX -> correl * stddevY / stddevX)
+                    Result.map3 (\correl stddevY stddevX -> correl * stddevY / stddevX)
                         (correlation values)
                         (stddev ys)
                         (stddev xs)
 
                 intercept =
-                    Maybe.map3 (\meanY slope meanX -> meanY - slope * meanX)
+                    Result.map3 (\meanY slope meanX -> meanY - slope * meanX)
                         (mean ys)
                         slope
                         (mean xs)
             in
-            Maybe.map2 LinearFit slope intercept
+            Result.map2 LinearFit slope intercept
 
 
 predictY : LinearFit -> Float -> Float
@@ -141,11 +158,11 @@ predictY fit x =
     fit.slope * x + fit.intercept
 
 
-goodnessOfFit : LinearFit -> List ( Float, Float ) -> Maybe Float
+goodnessOfFit : LinearFit -> List ( Float, Float ) -> Result Error Float
 goodnessOfFit fit values =
     case values of
         [] ->
-            Nothing
+            Err NotEnoughData
 
         _ ->
             let
@@ -160,12 +177,12 @@ goodnessOfFit fit values =
 
                 sumSquareTotal =
                     meanY
-                        |> Maybe.map (\localMean -> List.map (\y -> (y - localMean) ^ 2) ys)
-                        |> Maybe.map List.sum
+                        |> Result.map (\localMean -> List.map (\y -> (y - localMean) ^ 2) ys)
+                        |> Result.map List.sum
 
                 sumSquareResiduals =
                     List.map2 (\actual prediction -> (actual - prediction) ^ 2) ys predictions
                         |> List.sum
             in
             sumSquareTotal
-                |> Maybe.map (\ssT -> 1 - sumSquareResiduals / ssT)
+                |> Result.map (\ssT -> 1 - sumSquareResiduals / ssT)
