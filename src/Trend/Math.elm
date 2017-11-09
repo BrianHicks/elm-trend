@@ -32,7 +32,8 @@ type Error
 
 {-| Calculate the mean (average) for some values.
 
-Minimum required values: 1
+    mean [ 1, 2, 3, 4, 5 ]
+        --> Ok 3
 
 -}
 mean : List Float -> Result Error Float
@@ -47,7 +48,8 @@ mean numbers =
 
 {-| Calculate the standard deviation for some values.
 
-Minimum required values: 1
+    mean [ 1, 2, 3, 4, 5 ]
+        --> Ok 3
 
 -}
 stddev : List Float -> Result Error Float
@@ -66,7 +68,12 @@ stddev numbers =
 {-| Get the correlation coefficient for some values. The returned
 value will be between 0 (no correlation) and 1 (perfect correlation.)
 
+    correlation [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+        --> Ok 1
+
 Minimum required values: 2
+
+Under the covers, this is a Pearson correlation coefficient.
 
 -}
 correlation : List ( Float, Float ) -> Result Error Float
