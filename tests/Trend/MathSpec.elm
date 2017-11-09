@@ -11,7 +11,7 @@ meanTest : Test
 meanTest =
     describe "mean"
         [ test "no values" <|
-            \_ -> Expect.equal (Err NotEnoughData) (mean [])
+            \_ -> Expect.equal (Err (NotEnoughData 1)) (mean [])
         , fuzz Fuzz.float "one value" <|
             \i -> Expect.equal (Ok i) (mean [ i ])
         , fuzz Fuzz.float "two identical values" <|
@@ -29,7 +29,7 @@ stddevTest : Test
 stddevTest =
     describe "stddev"
         [ test "no values" <|
-            \_ -> Expect.equal (Err NotEnoughData) (stddev [])
+            \_ -> Expect.equal (Err (NotEnoughData 1)) (stddev [])
         , fuzz Fuzz.float "one value" <|
             \i -> Expect.equal (Ok 0) (stddev [ i ])
         , fuzz Fuzz.float "two identical values" <|
@@ -43,9 +43,9 @@ correlationTest : Test
 correlationTest =
     describe "correlation"
         [ test "no values" <|
-            \_ -> Expect.equal (Err NotEnoughData) (correlation [])
+            \_ -> Expect.equal (Err (NotEnoughData 2)) (correlation [])
         , test "single value" <|
-            \_ -> Expect.equal (Err NotEnoughData) (correlation [ ( 1, 1 ) ])
+            \_ -> Expect.equal (Err (NotEnoughData 2)) (correlation [ ( 1, 1 ) ])
         , fuzz Fuzz.float "strong positive correlation" <|
             \i ->
                 [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]

@@ -19,15 +19,14 @@ module Trend.Math
 trend line. Specifically:
 
   - `NotEnoughData`: there was not enough data to calculate a
-    value. Each function returning this error specifies how many
-    points it needs.
+    value. The attached `Int` is the minimum required.
   - `AllZeros`: this likely means you've tried to plot a point
     through a bunch of zeroes, or a values that are very very close to
     zero. If that's not the case, please open an issue.
 
 -}
 type Error
-    = NotEnoughData
+    = NotEnoughData Int
     | AllZeros
 
 
@@ -40,7 +39,7 @@ mean : List Float -> Result Error Float
 mean numbers =
     case numbers of
         [] ->
-            Err NotEnoughData
+            Err (NotEnoughData 1)
 
         _ ->
             Ok <| List.sum numbers / toFloat (List.length numbers)
@@ -75,11 +74,11 @@ correlation values =
     case values of
         -- you can't get a correlation out of no data points
         [] ->
-            Err NotEnoughData
+            Err (NotEnoughData 2)
 
         -- you can't get a correlation out of a single data point
         _ :: [] ->
-            Err NotEnoughData
+            Err (NotEnoughData 2)
 
         -- two or more? That's more like it.
         _ ->
