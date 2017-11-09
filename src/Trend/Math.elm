@@ -21,14 +21,14 @@ trend line. Specifically:
   - `NotEnoughData`: there was not enough data to calculate a
     value. Each function returning this error specifies how many
     points it needs.
-  - `ResultWasNaN`: this likely means you've tried to plot a point
+  - `AllZeros`: this likely means you've tried to plot a point
     through a bunch of zeroes, or a values that are very very close to
     zero. If that's not the case, please open an issue.
 
 -}
 type Error
     = NotEnoughData
-    | ResultWasNaN
+    | AllZeros
 
 
 {-| Calculate the mean (average) for some values.
@@ -106,7 +106,7 @@ correlation values =
                 |> Result.andThen
                     (\val ->
                         if isNaN val then
-                            Err ResultWasNaN
+                            Err AllZeros
                         else
                             Ok val
                     )

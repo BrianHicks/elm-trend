@@ -61,7 +61,7 @@ correlationTest =
                 [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
                     |> correlation
                     |> (if i == 0 then
-                            Expect.equal (Err ResultWasNaN)
+                            Expect.equal (Err AllZeros)
                         else
                             reasonablyCloseTo 0
                        )

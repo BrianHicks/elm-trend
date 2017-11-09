@@ -44,7 +44,7 @@ linearTest =
                 linear [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
                     |> Expect.equal
                         (if i == 0 then
-                            Err ResultWasNaN
+                            Err AllZeros
                          else
                             Ok { slope = 0, intercept = 0 }
                         )
@@ -73,7 +73,7 @@ goodnessOfFitTests =
                     |> Result.andThen (\fit -> goodnessOfFit fit values)
                     |> Expect.equal
                         (if i == 0 then
-                            Err ResultWasNaN
+                            Err AllZeros
                          else
                             Ok 0
                         )
