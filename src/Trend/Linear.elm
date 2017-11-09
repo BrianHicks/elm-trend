@@ -1,6 +1,7 @@
 module Trend.Linear
     exposing
         ( Line
+        , Point
         , Quick
         , Robust
         , Trend
@@ -42,6 +43,8 @@ Some kinds of data which fit these criteria:
 
 # Creating Trends
 
+@docs Point
+
 
 ## Quick Fit
 
@@ -54,14 +57,20 @@ Some kinds of data which fit these criteria:
 
 -}
 
-import Trend.Math exposing (Error(..))
+import Trend.Math as Math exposing (Error(..))
 
 
 {-| -}
 type Trend kind
-    = QuickTrend Line
+    = QuickTrend (List Point) Line
       -- TODO: these should be arrays
     | RobustTrend { slopes : List Float, intercepts : List Float }
+
+
+{-| a single 2-dimensional point
+-}
+type alias Point =
+    ( Float, Float )
 
 
 {-| The result of a trend prediction. Use this to make predictions
@@ -75,7 +84,12 @@ type alias Line =
 -}
 line : Trend a -> Line
 line trend =
-    Debug.crash "TODO"
+    case trend of
+        QuickTrend _ precalculated ->
+            precalculated
+
+        RobustTrend _ ->
+            Debug.crash "robust trend line not implemented"
 
 
 {-| Given an `x`, predict `y`.
@@ -109,9 +123,9 @@ This is the fastest of the functions in this module, but it's also the
 most susceptible to being thrown off by outliers. Let's look at that
 line again, but with an outlier:
 
-     quick [ (1, 1), (2, 2), (3, 3), (4, 8) ]
+     quick [ (1, 1), (2, 2), (3, 3), (4, 0) ]
          |> Result.map line
-         --> Ok { slope = 1, intercept = 0 }
+         --> Ok { slope = -0.2, intercept = 2 }
 
 The more outliers you have, the worse fit you'll get. You can figure
 out if this is happening by sending your `Trend` to
@@ -121,9 +135,37 @@ Under the covers, this is an [ordinary least squares
 regression](https://TODO.some-nice-explanation.com).
 
 -}
-quick : List ( Float, Float ) -> Result Error (Trend Quick)
+quick : List Point -> Result Error (Trend Quick)
 quick values =
-    Debug.crash "TODO"
+    case values of
+        -- can't draw a line through no values
+        [] ->
+            Err (NeedMoreValues 2)
+
+        -- also can't draw a line through a single value
+        _ :: [] ->
+            Err (NeedMoreValues 2)
+
+        -- we've got two or more, let's go!
+        _ ->
+            let
+                ( xs, ys ) =
+                    List.unzip values
+
+                slope =
+                    Result.map3 (\correl stddevY stddevX -> correl * stddevY / stddevX)
+                        (Math.correlation values)
+                        (Math.stddev ys)
+                        (Math.stddev xs)
+
+                intercept =
+                    Result.map3 (\meanY slope meanX -> meanY - slope * meanX)
+                        (Math.mean ys)
+                        slope
+                        (Math.mean xs)
+            in
+            Result.map2 Line slope intercept
+                |> Result.map (QuickTrend values)
 
 
 {-| Get the goodness of fit for a quick trend. This is a number
@@ -137,9 +179,9 @@ you have to use some judgement in interpreting it!
 
 And again with that outlier from [`quick`](#quick):
 
-     quick [ (1, 1), (2, 2), (3, 3), (4, 8) ]
+     quick [ (1, 1), (2, 2), (3, 3), (4, 0) ]
          |> Result.map goodnessOfFit
-         --> Ok 1
+         --> Ok 0.039999999999999813
 
 **Maintainer's note:** this will evaluate the fit for the original
 data. If you need to evaluate goodness of fit for _new_ data given an
@@ -151,8 +193,36 @@ yourself in this situation!
 
 -}
 goodnessOfFit : Trend Quick -> Float
-goodnessOfFit fit =
-    Debug.crash "TODO"
+goodnessOfFit trend =
+    case trend of
+        RobustTrend _ ->
+            Debug.crash "got a RobustTrend in goodnessOfFit. The phantom type should have prevented this."
+
+        QuickTrend values fit ->
+            let
+                ( xs, ys ) =
+                    List.unzip values
+
+                predictions : List Float
+                predictions =
+                    List.map (predictY fit) xs
+
+                meanY : Float
+                meanY =
+                    Math.mean ys |> Result.withDefault 0
+
+                sumSquareTotal : Float
+                sumSquareTotal =
+                    ys
+                        |> List.map (\y -> (y - meanY) ^ 2)
+                        |> List.sum
+
+                sumSquareResiduals : Float
+                sumSquareResiduals =
+                    List.map2 (\actual prediction -> (actual - prediction) ^ 2) ys predictions
+                        |> List.sum
+            in
+            1 - sumSquareResiduals / sumSquareTotal
 
 
 {-| a trend calculated from [`robust`](#robust)
@@ -172,13 +242,11 @@ For good data, we have the same results as [`quick`](#quick):
 
      robust [ (1, 1), (2, 2), (3, 3), (4, 4) ]
          |> Result.map line
-         --> Ok { slope = 1, intercept = 0 }
 
 But when we have outliers, we still get a good result:
 
      robust [ (1, 1), (2, 2), (3, 3), (4, 8) ]
          |> Result.map line
-         --> Ok { slope = 1, intercept = 0 }
 
 Under the covers, this is a [Thiel-Sen
 estimator](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
@@ -186,13 +254,13 @@ estimator](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
 going on; check it out!)
 
 -}
-robust : List ( Float, Float ) -> Result Error (Trend Robust)
+robust : List Point -> Result Error (Trend Robust)
 robust values =
-    Debug.crash "TODO"
+    Debug.crash "TODO: robust trend"
 
 
 {-| TODO: good docs, including how to interpret this data.
 -}
 confidenceInterval : Float -> Trend Robust -> Result Error ( Line, Line )
 confidenceInterval values fit =
-    Debug.crash "TODO"
+    Debug.crash "TODO: robust confidence interval"

@@ -1,27 +1,29 @@
-module TrendSpec exposing (..)
+module Trend.LinearSpec exposing (..)
 
 import Expect
 import Fuzz
 import Helpers exposing (reasonablyCloseTo)
 import Test exposing (..)
-import Trend exposing (..)
+import Trend.Linear exposing (..)
 import Trend.Math exposing (Error(..))
 
 
-linearTest : Test
-linearTest =
-    describe "linear"
+quickTest : Test
+quickTest =
+    describe "quick"
         [ describe "strong positive correlation" <|
             [ fuzz Fuzz.float "slope" <|
                 \i ->
                     [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
-                        |> linear
+                        |> quick
+                        |> Result.map line
                         |> Result.map .slope
                         |> reasonablyCloseTo 1
             , fuzz Fuzz.float "intercept" <|
                 \i ->
                     [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
-                        |> linear
+                        |> quick
+                        |> Result.map line
                         |> Result.map .intercept
                         |> reasonablyCloseTo 0
             ]
@@ -29,19 +31,22 @@ linearTest =
             [ fuzz (Fuzz.floatRange -1.0e6 1.0e6) "slope" <|
                 \i ->
                     [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
-                        |> linear
+                        |> quick
+                        |> Result.map line
                         |> Result.map .slope
                         |> reasonablyCloseTo -1
             , fuzz (Fuzz.floatRange -1.0e6 1.0e6) "intercept" <|
                 \i ->
                     [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
-                        |> linear
+                        |> quick
+                        |> Result.map line
                         |> Result.map .intercept
                         |> reasonablyCloseTo (i * 2)
             ]
         , fuzz Fuzz.float "no correlation" <|
             \i ->
-                linear [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
+                quick [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
+                    |> Result.map line
                     |> Expect.equal
                         (if i == 0 then
                             Err AllZeros
@@ -56,21 +61,13 @@ goodnessOfFitTests =
     describe "goodnessOfFit"
         [ fuzz Fuzz.float "good fit" <|
             \i ->
-                let
-                    values =
-                        [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
-                in
-                linear values
-                    |> Result.andThen (\fit -> goodnessOfFit fit values)
+                quick [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
+                    |> Result.map goodnessOfFit
                     |> Expect.equal (Ok 1)
         , fuzz Fuzz.float "bad fit" <|
             \i ->
-                let
-                    values =
-                        [ ( 0, i ), ( 0, -i ), ( i, 0 ), ( -i, 0 ) ]
-                in
-                linear values
-                    |> Result.andThen (\fit -> goodnessOfFit fit values)
+                quick [ ( 0, i ), ( 0, -i ), ( i, 0 ), ( -i, 0 ) ]
+                    |> Result.map goodnessOfFit
                     |> Expect.equal
                         (if i == 0 then
                             Err AllZeros
