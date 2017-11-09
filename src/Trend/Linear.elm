@@ -1,6 +1,8 @@
 module Trend.Linear
     exposing
         ( Line
+        , Quick
+        , Robust
         , Trend
         , confidenceInterval
         , goodnessOfFit
@@ -30,7 +32,7 @@ Some kinds of data which fit these criteria:
     spending lead to longer life expectancy? How much does
     socioeconomic status depend on education levels?
 
-@docs Trend
+@docs Trend, Quick, Robust
 
 
 ## Using Trend Lines
@@ -90,6 +92,8 @@ predictY { slope, intercept } x =
     slope * x + intercept
 
 
+{-| a trend calculated from [`quick`](#quick)
+-}
 type Quick
     = Quick
 
@@ -134,7 +138,7 @@ you have to use some judgement in interpreting it!
 And again with that outlier from [`quick`](#quick):
 
      quick [ (1, 1), (2, 2), (3, 3), (4, 8) ]
-         |> Result.map line
+         |> Result.map goodnessOfFit
          --> Ok 1
 
 **Maintainer's note:** this will evaluate the fit for the original
@@ -146,11 +150,13 @@ issue](https://github.com/BrianHicks/elm-trend/issues/new) if you find
 yourself in this situation!
 
 -}
-goodnessOfFit : List ( Float, Float ) -> Trend Quick -> Float
-goodnessOfFit values fit =
+goodnessOfFit : Trend Quick -> Float
+goodnessOfFit fit =
     Debug.crash "TODO"
 
 
+{-| a trend calculated from [`robust`](#robust)
+-}
 type Robust
     = Robust
 
@@ -180,7 +186,7 @@ estimator](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
 going on; check it out!)
 
 -}
-robust : List ( Float, Float ) -> Trend Robust
+robust : List ( Float, Float ) -> Result Error (Trend Robust)
 robust values =
     Debug.crash "TODO"
 

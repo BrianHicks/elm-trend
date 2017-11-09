@@ -1,6 +1,8 @@
 {
     "root": "../src",
     "tests": [
-	"Trend"
+	"Trend",
+	"Trend.Math",
+	"Trend.Linear"
     ]
 }
