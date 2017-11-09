@@ -1,3 +1,5 @@
+SRC_FILES = $(wildcard src/*.elm src/**/*.elm)
+
 .PHONY: all
 all: documentation.json test
 
@@ -16,14 +18,14 @@ elm-stuff: elm-package.json node_modules
 	env PATH=node_modules/.bin:${PATH} elm package install --yes
 	touch -m $@
 
-documentation.json: elm-stuff $(wildcard src/*.elm) node_modules
+documentation.json: elm-stuff ${SRC_FILES} node_modules
 	node_modules/.bin/elm-make --docs=$@
 
 .PHONY: test
 test: tests/elm-stuff tests/Doc node_modules
 	node_modules/.bin/elm-test --compiler node_modules/.bin/elm-make
 
-tests/Doc: $(wildcard src/*.elm) tests/elm-verify-examples.json node_modules
+tests/Doc: ${SRC_FILES} tests/elm-verify-examples.json node_modules
 	node_modules/.bin/elm-verify-examples
 	touch -m $@
 
