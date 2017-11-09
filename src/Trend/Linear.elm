@@ -64,7 +64,7 @@ import Trend.Math as Math exposing (Error(..))
 type Trend kind
     = QuickTrend (List Point) Line
       -- TODO: these should be arrays
-    | RobustTrend { slopes : List Float, intercepts : List Float }
+    | RobustTrend { values : List Point, slopes : List Float, line : Line }
 
 
 {-| a single 2-dimensional point
@@ -88,8 +88,8 @@ line trend =
         QuickTrend _ precalculated ->
             precalculated
 
-        RobustTrend _ ->
-            Debug.crash "robust trend line not implemented"
+        RobustTrend { line } ->
+            line
 
 
 {-| Given an `x`, predict `y`.
@@ -232,8 +232,8 @@ type Robust
 
 
 {-| When your data has outliers, you'll want to use a robust estimator
-instead of the quick estimator. This is much slower (it runs in
-`O(n^2)` time), but will still give good results in the face of
+instead of the quick estimator. This is much slower (it runs roughly
+in `O(n^2)` time), but will still give good results in the face of
 corrupted data. Specifically, it will still work if up to ~29.3% of
 your data consists of outliers. And again, the easiest way to check
 this is to visualize it with `terezka/elm-plot` or something similar.
@@ -242,13 +242,15 @@ For good data, we have the same results as [`quick`](#quick):
 
      robust [ (1, 1), (2, 2), (3, 3), (4, 4) ]
          |> Result.map line
+         --> Ok { slope = 1, intercept = 0 }
 
 But when we have outliers, we still get a good result:
 
-     robust [ (1, 1), (2, 2), (3, 3), (4, 8) ]
+     robust [ (1, 1), (2, 2), (3, 3), (4, 0) ]
          |> Result.map line
+         --> Ok { slope = 1, intercept = 0 }
 
-Under the covers, this is a [Thiel-Sen
+Under the covers, this is a [Theil-Sen
 estimator](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
 (which is pretty cool and easy to get an intuitive grasp of what's
 going on; check it out!)
@@ -256,7 +258,77 @@ going on; check it out!)
 -}
 robust : List Point -> Result Error (Trend Robust)
 robust values =
-    Debug.crash "TODO: robust trend"
+    case values of
+        [] ->
+            Err (NeedMoreValues 2)
+
+        _ :: [] ->
+            Err (NeedMoreValues 2)
+
+        _ ->
+            let
+                slopes =
+                    values
+                        |> List.foldl
+                            (\( x, y ) acc ->
+                                List.foldl
+                                    (\( x1, y1 ) acc ->
+                                        if x == x1 then
+                                            acc
+                                        else
+                                            (y - y1) / (x - x1) :: acc
+                                    )
+                                    acc
+                                    values
+                            )
+                            []
+                        |> List.sort
+
+                slope =
+                    percentile 0.5 slopes
+
+                intercepts =
+                    slope
+                        |> Maybe.map
+                            (\m -> List.map (\( x, y ) -> y - m * x) values)
+                        |> Maybe.map List.sort
+
+                intercept =
+                    intercepts
+                        |> Maybe.andThen (percentile 0.5)
+            in
+            Maybe.map2 Line slope intercept
+                |> Maybe.map
+                    (\line ->
+                        RobustTrend
+                            { values = values
+                            , slopes = slopes
+                            , line = line
+                            }
+                    )
+                -- I *think* AllZeros is the correct error here, but I'm not 100% on it.
+                |> Result.fromMaybe AllZeros
+
+
+{-| get the kth percentile in the list of values. This assumes that
+the list is already sorted.
+
+TODO: generalize this and move it to Trend.Math? But maybe this is not
+a good idea, as it would have to be made less efficient to return
+reliable results without the preconditions mentioned above.
+
+-}
+percentile : Float -> List a -> Maybe a
+percentile k xs =
+    -- TODO: this feels basically wrong. It doesn't work well for 50th
+    -- percentiles on lists with an odd number of items. Probably
+    -- should just grab one of those linear math libraries off of
+    -- elm-package or look stuff up on WikiPedia.
+    --
+    -- TODO #2: use arrays
+    xs
+        |> List.drop (ceiling <| toFloat (List.length xs) * k)
+        |> List.head
 
 
 {-| TODO: good docs, including how to interpret this data.
