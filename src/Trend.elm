@@ -60,11 +60,11 @@ linear values =
     case values of
         -- can't draw a line through no values
         [] ->
-            Err (NotEnoughData 2)
+            Err (NeedMoreValues 2)
 
         -- also can't draw a line through a single value
         _ :: [] ->
-            Err (NotEnoughData 2)
+            Err (NeedMoreValues 2)
 
         -- we've got two or more, let's go!
         _ ->
@@ -121,7 +121,7 @@ goodnessOfFit : LinearFit -> List ( Float, Float ) -> Result Error Float
 goodnessOfFit fit values =
     case values of
         [] ->
-            Err (NotEnoughData 1)
+            Err (NeedMoreValues 1)
 
         _ ->
             let

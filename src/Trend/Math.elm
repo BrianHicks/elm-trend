@@ -18,7 +18,7 @@ module Trend.Math
 {-| Indicate that something has gone wrong in the caculation of a
 trend line. Specifically:
 
-  - `NotEnoughData`: there was not enough data to calculate a
+  - `NeedMoreValues`: there was not enough data to calculate a
     value. The attached `Int` is the minimum required.
   - `AllZeros`: this likely means you've tried to plot a point
     through a bunch of zeroes, or a values that are very very close to
@@ -26,7 +26,7 @@ trend line. Specifically:
 
 -}
 type Error
-    = NotEnoughData Int
+    = NeedMoreValues Int
     | AllZeros
 
 
@@ -39,7 +39,7 @@ mean : List Float -> Result Error Float
 mean numbers =
     case numbers of
         [] ->
-            Err (NotEnoughData 1)
+            Err (NeedMoreValues 1)
 
         _ ->
             Ok <| List.sum numbers / toFloat (List.length numbers)
@@ -74,11 +74,11 @@ correlation values =
     case values of
         -- you can't get a correlation out of no data points
         [] ->
-            Err (NotEnoughData 2)
+            Err (NeedMoreValues 2)
 
         -- you can't get a correlation out of a single data point
         _ :: [] ->
-            Err (NotEnoughData 2)
+            Err (NeedMoreValues 2)
 
         -- two or more? That's more like it.
         _ ->
