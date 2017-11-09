@@ -4,6 +4,7 @@ import Expect exposing (Expectation)
 import Fuzz
 import Test exposing (..)
 import Trend exposing (..)
+import Trend.Math exposing (Error(..))
 
 
 reasonablyCloseTo : Float -> Result x Float -> Expectation

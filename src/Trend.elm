@@ -1,7 +1,6 @@
 module Trend
     exposing
-        ( Error(..)
-        , LinearFit
+        ( LinearFit
         , goodnessOfFit
         , linear
         , predictY
@@ -16,93 +15,9 @@ module Trend
 
 @docs goodnessOfFit, predictY
 
-
-## Errors
-
-@docs Error
-
 -}
 
-
-{-| Indicate that something has gone wrong in the caculation of a
-trend line. Specifically:
-
-  - `NotEnoughData`: there was not enough data to calculate a trend. The
-    number attached is the minimum number of points needed to
-    calculate.
-  - `ResultWasNaN`: this likely means you've tried to plot a point
-    through a bunch of zeroes, or a bunch of values that are very very
-    close to zero. If that's not the case, please open an issue.
-
--}
-type Error
-    = NotEnoughData
-    | ResultWasNaN
-
-
-mean : List Float -> Result Error Float
-mean numbers =
-    case numbers of
-        [] ->
-            Err NotEnoughData
-
-        _ ->
-            Ok <| List.sum numbers / toFloat (List.length numbers)
-
-
-stddev : List Float -> Result Error Float
-stddev numbers =
-    let
-        helper : Float -> Result Error Float
-        helper seriesMean =
-            numbers
-                |> List.map (\n -> (n - seriesMean) ^ 2)
-                |> mean
-                |> Result.map sqrt
-    in
-    mean numbers |> Result.andThen helper
-
-
-correlation : List ( Float, Float ) -> Result Error Float
-correlation values =
-    case values of
-        -- you can't get a correlation out of no data points
-        [] ->
-            Err NotEnoughData
-
-        -- you can't get a correlation out of a single data point
-        _ :: [] ->
-            Err NotEnoughData
-
-        -- two or more? That's more like it.
-        _ ->
-            let
-                ( xs, ys ) =
-                    List.unzip values
-
-                standardize : Result Error Float -> Result Error Float -> List Float -> Result Error (List Float)
-                standardize meanResult stddevResult series =
-                    Result.map2
-                        (\mean stddev -> List.map (\point -> (point - mean) / stddev) series)
-                        meanResult
-                        stddevResult
-
-                summedProduct =
-                    Result.map2
-                        (\stdX stdY -> List.map2 (*) stdX stdY)
-                        (standardize (mean xs) (stddev xs) xs)
-                        (standardize (mean ys) (stddev ys) ys)
-                        |> Result.map List.sum
-            in
-            summedProduct
-                |> Result.map (\sum -> sum / toFloat (List.length values))
-                |> Result.andThen
-                    (\val ->
-                        if isNaN val then
-                            Err ResultWasNaN
-                        else
-                            Ok val
-                    )
+import Trend.Math as Math exposing (Error(..))
 
 
 {-| A line plotted through points. Get one by passing your data to
@@ -159,15 +74,15 @@ linear values =
 
                 slope =
                     Result.map3 (\correl stddevY stddevX -> correl * stddevY / stddevX)
-                        (correlation values)
-                        (stddev ys)
-                        (stddev xs)
+                        (Math.correlation values)
+                        (Math.stddev ys)
+                        (Math.stddev xs)
 
                 intercept =
                     Result.map3 (\meanY slope meanX -> meanY - slope * meanX)
-                        (mean ys)
+                        (Math.mean ys)
                         slope
-                        (mean xs)
+                        (Math.mean xs)
             in
             Result.map2 LinearFit slope intercept
 
@@ -217,7 +132,7 @@ goodnessOfFit fit values =
                     List.map (predictY fit) xs
 
                 meanY =
-                    mean ys
+                    Math.mean ys
 
                 sumSquareTotal =
                     meanY
