@@ -26,6 +26,7 @@ test: tests/elm-stuff tests/Doc node_modules
 	node_modules/.bin/elm-test --compiler node_modules/.bin/elm-make
 
 tests/Doc: ${SRC_FILES} tests/elm-verify-examples.json node_modules
+	rm -rf $@
 	node_modules/.bin/elm-verify-examples
 	touch -m $@
 
