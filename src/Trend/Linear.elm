@@ -330,6 +330,22 @@ percentile k xs =
 
 {-| TODO: good docs, including how to interpret this data.
 -}
-confidenceInterval : Float -> Trend Robust -> Result Error ( Line, Line )
-confidenceInterval values fit =
-    Debug.crash "TODO: robust confidence interval"
+confidenceInterval : Trend Robust -> Maybe ( Line, Line )
+confidenceInterval (Trend _ (Robust { values, slopes })) =
+    let
+        cutoff =
+            0.025
+
+        top =
+            1 - cutoff
+
+        bottom =
+            cutoff
+    in
+    -- TODO: this should always be non-Nothing, since all the
+    -- functions we're using depend on valid data, which we know
+    -- we have due to the constructors. So this should maybe just
+    -- be `( Line, Line )`
+    Maybe.map2 (,)
+        (theilSenLine bottom slopes values)
+        (theilSenLine top slopes values)
