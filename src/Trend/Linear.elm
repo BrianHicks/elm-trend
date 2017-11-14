@@ -318,17 +318,22 @@ a good idea, as it would have to be made less efficient to return
 reliable results without the preconditions mentioned above.
 
 -}
-percentile : Float -> List a -> Maybe a
+percentile : Float -> List Float -> Maybe Float
 percentile k xs =
-    -- TODO: this feels basically wrong. It doesn't work well for 50th
-    -- percentiles on lists with an odd number of items. Probably
-    -- should just grab one of those linear math libraries off of
-    -- elm-package or look stuff up on WikiPedia.
-    --
-    -- TODO #2: use arrays
-    xs
-        |> List.drop (ceiling <| toFloat (List.length xs) * k)
-        |> List.head
+    let
+        index =
+            toFloat (List.length xs) * k
+    in
+    if index - toFloat (floor index) == 0 then
+        xs
+            |> List.drop (ceiling index)
+            |> List.head
+    else
+        xs
+            |> List.drop (floor index)
+            |> List.take 2
+            |> Math.mean
+            |> Result.toMaybe
 
 
 {-| TODO: good docs, including how to interpret this data.
