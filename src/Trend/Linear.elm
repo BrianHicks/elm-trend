@@ -62,9 +62,7 @@ import Trend.Math as Math exposing (Error(..))
 
 {-| -}
 type Trend kind
-    = QuickTrend (List Point) Line
-      -- TODO: these should be arrays
-    | RobustTrend { values : List Point, slopes : List Float, line : Line }
+    = Trend Line kind
 
 
 {-| a single 2-dimensional point
@@ -83,13 +81,8 @@ type alias Line =
 {-| Extract a line from a trend.
 -}
 line : Trend a -> Line
-line trend =
-    case trend of
-        QuickTrend _ precalculated ->
-            precalculated
-
-        RobustTrend { line } ->
-            line
+line (Trend precalculated _) =
+    precalculated
 
 
 {-| Given an `x`, predict `y`.
@@ -109,7 +102,7 @@ predictY { slope, intercept } x =
 {-| a trend calculated from [`quick`](#quick)
 -}
 type Quick
-    = Quick
+    = Quick (List Point)
 
 
 {-| Plot a line through a series of points `(x, y)`. So given a
@@ -165,7 +158,7 @@ quick values =
                         (Math.mean xs)
             in
             Result.map2 Line slope intercept
-                |> Result.map (QuickTrend values)
+                |> Result.map (\line -> Trend line (Quick values))
 
 
 {-| Get the goodness of fit for a quick trend. This is a number
@@ -195,10 +188,7 @@ yourself in this situation!
 goodnessOfFit : Trend Quick -> Float
 goodnessOfFit trend =
     case trend of
-        RobustTrend _ ->
-            Debug.crash "got a RobustTrend in goodnessOfFit. The phantom type should have prevented this."
-
-        QuickTrend values fit ->
+        Trend fit (Quick values) ->
             let
                 ( xs, ys ) =
                     List.unzip values
@@ -228,7 +218,7 @@ goodnessOfFit trend =
 {-| a trend calculated from [`robust`](#robust)
 -}
 type Robust
-    = Robust
+    = Robust { values : List Point, slopes : List Float }
 
 
 {-| When your data has outliers, you'll want to use a robust estimator
@@ -300,11 +290,13 @@ robust values =
             Maybe.map2 Line slope intercept
                 |> Maybe.map
                     (\line ->
-                        RobustTrend
-                            { values = values
-                            , slopes = slopes
-                            , line = line
-                            }
+                        Trend
+                            line
+                            (Robust
+                                { values = values
+                                , slopes = slopes
+                                }
+                            )
                     )
                 -- I *think* AllZeros is the correct error here, but I'm not 100% on it.
                 |> Result.fromMaybe AllZeros
