@@ -271,21 +271,8 @@ robust values =
                             )
                             []
                         |> List.sort
-
-                slope =
-                    percentile 0.5 slopes
-
-                intercepts =
-                    slope
-                        |> Maybe.map
-                            (\m -> List.map (\( x, y ) -> y - m * x) values)
-                        |> Maybe.map List.sort
-
-                intercept =
-                    intercepts
-                        |> Maybe.andThen (percentile 0.5)
             in
-            Maybe.map2 Line slope intercept
+            theilSenLine 0.5 slopes values
                 |> Maybe.map
                     (\line ->
                         Trend
@@ -298,6 +285,21 @@ robust values =
                     )
                 -- I *think* AllZeros is the correct error here, but I'm not 100% on it.
                 |> Result.fromMaybe AllZeros
+
+
+theilSenLine : Float -> List Float -> List Point -> Maybe Line
+theilSenLine pct slopes points =
+    let
+        slope =
+            percentile pct slopes
+
+        intercept =
+            slope
+                |> Maybe.map (\m -> List.map (\( x, y ) -> y - m * x) points)
+                |> Maybe.map List.sort
+                |> Maybe.andThen (percentile pct)
+    in
+    Maybe.map2 Line slope intercept
 
 
 {-| get the kth percentile in the list of values. This assumes that
