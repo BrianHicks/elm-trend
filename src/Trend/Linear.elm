@@ -186,33 +186,31 @@ yourself in this situation!
 
 -}
 goodnessOfFit : Trend Quick -> Float
-goodnessOfFit trend =
-    case trend of
-        Trend fit (Quick values) ->
-            let
-                ( xs, ys ) =
-                    List.unzip values
+goodnessOfFit (Trend fit (Quick values)) =
+    let
+        ( xs, ys ) =
+            List.unzip values
 
-                predictions : List Float
-                predictions =
-                    List.map (predictY fit) xs
+        predictions : List Float
+        predictions =
+            List.map (predictY fit) xs
 
-                meanY : Float
-                meanY =
-                    Math.mean ys |> Result.withDefault 0
+        meanY : Float
+        meanY =
+            Math.mean ys |> Result.withDefault 0
 
-                sumSquareTotal : Float
-                sumSquareTotal =
-                    ys
-                        |> List.map (\y -> (y - meanY) ^ 2)
-                        |> List.sum
+        sumSquareTotal : Float
+        sumSquareTotal =
+            ys
+                |> List.map (\y -> (y - meanY) ^ 2)
+                |> List.sum
 
-                sumSquareResiduals : Float
-                sumSquareResiduals =
-                    List.map2 (\actual prediction -> (actual - prediction) ^ 2) ys predictions
-                        |> List.sum
-            in
-            1 - sumSquareResiduals / sumSquareTotal
+        sumSquareResiduals : Float
+        sumSquareResiduals =
+            List.map2 (\actual prediction -> (actual - prediction) ^ 2) ys predictions
+                |> List.sum
+    in
+    1 - sumSquareResiduals / sumSquareTotal
 
 
 {-| a trend calculated from [`robust`](#robust)
