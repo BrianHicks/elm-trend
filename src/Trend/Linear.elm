@@ -328,7 +328,17 @@ percentile k xs =
             |> Result.toMaybe
 
 
-{-| TODO: good docs, including how to interpret this data.
+{-| Calculate a confidence interval from a robust set of
+data. [Consult
+WikiPedia](https://en.wikipedia.org/wiki/Confidence_interval) for a
+thorough understanding of what this may mean for your data set. This
+function gives a 95% confidence interval.
+
+**Maintainer's note:** We ought to be able to generate a confidence
+interval for quick trends too, but I'm not confident enough in my math
+skills to do it correctly. Help wanted here! If you know how to do
+that calculation, let's work together and add it.
+
 -}
 confidenceInterval : Trend Robust -> Maybe ( Line, Line )
 confidenceInterval (Trend _ (Robust { values, slopes })) =
