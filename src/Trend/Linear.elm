@@ -176,6 +176,11 @@ And again with that outlier from [`quick`](#quick):
          |> Result.map goodnessOfFit
          --> Ok 0.039999999999999813
 
+This calculation is only valid for [`quick`](#quick) trends, since it
+measures how well a fit has minimized the square sum of error. That
+means it's only really useful for ordinary least squares, not the
+Theil-Sen estimator we use for [`robust`](#robust)
+
 **Maintainer's note:** this will evaluate the fit for the original
 data. If you need to evaluate goodness of fit for _new_ data given an
 existing `Trend`, we'll need to expose a new function. I don't have a
