@@ -221,7 +221,7 @@ goodnessOfFit (Trend fit (Quick values)) =
 {-| a trend calculated from [`robust`](#robust)
 -}
 type Robust
-    = Robust { values : List Point, slopes : List Float }
+    = Robust Line Line
 
 
 {-| When your data has outliers, you'll want to use a robust estimator
@@ -277,17 +277,11 @@ robust values =
                             []
                         |> List.sort
             in
-            theilSenLine 0.5 slopes values
-                |> Maybe.map
-                    (\line ->
-                        Trend
-                            line
-                            (Robust
-                                { values = values
-                                , slopes = slopes
-                                }
-                            )
-                    )
+            Maybe.map3
+                (\line lower upper -> Trend line (Robust lower upper))
+                (theilSenLine 0.5 slopes values)
+                (theilSenLine 0.975 slopes values)
+                (theilSenLine 0.025 slopes values)
                 -- I *think* AllZeros is the correct error here, but I'm not 100% on it.
                 |> Result.fromMaybe AllZeros
 
@@ -340,22 +334,6 @@ skills to do it correctly. Help wanted here! If you know how to do
 that calculation, let's work together and add it.
 
 -}
-confidenceInterval : Trend Robust -> Maybe ( Line, Line )
-confidenceInterval (Trend _ (Robust { values, slopes })) =
-    let
-        cutoff =
-            0.025
-
-        top =
-            1 - cutoff
-
-        bottom =
-            cutoff
-    in
-    -- TODO: this should always be non-Nothing, since all the
-    -- functions we're using depend on valid data, which we know
-    -- we have due to the constructors. So this should maybe just
-    -- be `( Line, Line )`
-    Maybe.map2 (,)
-        (theilSenLine bottom slopes values)
-        (theilSenLine top slopes values)
+confidenceInterval : Trend Robust -> ( Line, Line )
+confidenceInterval (Trend _ (Robust lower upper)) =
+    ( lower, upper )
