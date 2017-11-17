@@ -304,11 +304,6 @@ theilSenLine pct slopes points =
 
 {-| get the kth percentile in the list of values. This assumes that
 the list is already sorted.
-
-TODO: generalize this and move it to Trend.Math? But maybe this is not
-a good idea, as it would have to be made less efficient to return
-reliable results without the preconditions mentioned above.
-
 -}
 percentile : Float -> List Float -> Maybe Float
 percentile k xs =
