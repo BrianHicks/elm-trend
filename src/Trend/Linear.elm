@@ -125,7 +125,7 @@ out if this is happening by sending your `Trend` to
 [`goodnessOfFit`](#goodnessOfFit).
 
 Under the covers, this is an [ordinary least squares
-regression](https://TODO.some-nice-explanation.com).
+regression](https://en.wikipedia.org/wiki/Ordinary_least_squares).
 
 -}
 quick : List Point -> Result Error (Trend Quick)
