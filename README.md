@@ -2,6 +2,13 @@
 
 Generate trend lines from point data.
 
+## Changelog
+
+Version | Changes
+--------|--------
+2.0.0 | Add robust trendline calculation using Theil-Sen estimators.
+1.0.0 | Initial release
+
 ## Help Wanted!
 
 We currently only generate linear trend lines from two-dimensional data, but would welcome PRs for multivariate regressions and nonlinear regressions.
