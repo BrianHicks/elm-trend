@@ -108,7 +108,7 @@ type Quick
 {-| Plot a line through a series of points `(x, y)`. So given a
 perfect linear relationship:
 
-     quick [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+     quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, 5) ]
          |> Result.map line
          --> Ok { slope = 1, intercept = 0 }
 
@@ -116,13 +116,14 @@ This is the fastest of the functions in this module, but it's also the
 most susceptible to being thrown off by outliers. Let's look at that
 line again, but with an outlier:
 
-     quick [ (1, 1), (2, 2), (3, 3), (4, 0) ]
+     --                                       vvvvv
+     quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, -5) ]
          |> Result.map line
-         --> Ok { slope = -0.2, intercept = 2 }
+         --> Ok { slope = -0.9999999999999999, intercept = 3.9999999999999996 }
 
 The more outliers you have, the worse fit you'll get. You can figure
-out if this is happening by sending your `Trend` to
-[`goodnessOfFit`](#goodnessOfFit).
+out if this is happening by sending your the result of this function
+to [`goodnessOfFit`](#goodnessOfFit).
 
 Under the covers, this is an [ordinary least squares
 regression](https://en.wikipedia.org/wiki/Ordinary_least_squares).
@@ -166,15 +167,16 @@ between 0 to 1. A higher number generally indicates a better fit, but
 it doesn't know anything about what your data _means_. This means that
 you have to use some judgement in interpreting it!
 
-    quick [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+    quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, 5) ]
         |> Result.map goodnessOfFit
         --> Ok 1
 
 And again with that outlier from [`quick`](#quick):
 
-     quick [ (1, 1), (2, 2), (3, 3), (4, 0) ]
+     --                                       vvvvv
+     quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, -5) ]
          |> Result.map goodnessOfFit
-         --> Ok 0.039999999999999813
+         --> Ok 0.19999999999999996
 
 This calculation is only valid for [`quick`](#quick) trends, since it
 measures how well a fit has minimized the square sum of error. That
@@ -233,13 +235,14 @@ this is to visualize it with `terezka/elm-plot` or something similar.
 
 For good data, we have the same results as [`quick`](#quick):
 
-     robust [ (1, 1), (2, 2), (3, 3), (4, 4) ]
+     robust [ (1, 1), (2, 2), (3, 3), (4, 4), (5, 5) ]
          |> Result.map line
          --> Ok { slope = 1, intercept = 0 }
 
 But when we have outliers, we still get a good result:
 
-     robust [ (1, 1), (2, 2), (3, 3), (4, 0) ]
+     --                                        vvvvv
+     robust [ (1, 1), (2, 2), (3, 3), (4, 4), (5, -5) ]
          |> Result.map line
          --> Ok { slope = 1, intercept = 0 }
 
