@@ -312,11 +312,11 @@ percentile k xs =
     in
     if index - toFloat (floor index) == 0 then
         xs
-            |> List.drop (ceiling index)
+            |> List.drop (ceiling index - 1)
             |> List.head
     else
         xs
-            |> List.drop (floor index)
+            |> List.drop (floor index - 1)
             |> List.take 2
             |> Math.mean
             |> Result.toMaybe
