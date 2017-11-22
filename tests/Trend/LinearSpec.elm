@@ -19,6 +19,17 @@ predictYTests =
         ]
 
 
+predictXTests : Test
+predictXTests =
+    describe "predictX"
+        [ fuzz2 Fuzz.float Fuzz.float "at y=1" <|
+            \slope intercept ->
+                Expect.equal
+                    ((1 - intercept) / slope)
+                    (predictX { slope = slope, intercept = intercept } 1)
+        ]
+
+
 standard : (List Point -> Result Error (Trend a)) -> List Test
 standard predictor =
     [ describe "strong positive correlation" <|

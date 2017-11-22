@@ -8,6 +8,7 @@ module Trend.Linear
         , confidenceInterval
         , goodnessOfFit
         , line
+        , predictX
         , predictY
         , quick
         , robust
@@ -38,7 +39,7 @@ Some kinds of data which fit these criteria:
 
 ## Using Trend Lines
 
-@docs Line, line, predictY
+@docs Line, line, predictY, predictX
 
 
 # Creating Trends
@@ -97,6 +98,20 @@ line (Trend precalculated _) =
 predictY : Line -> Float -> Float
 predictY { slope, intercept } x =
     slope * x + intercept
+
+
+{-| Given a `y`, predict `x`.
+
+    predictX { slope = 1, intercept = 0 } 1
+        --> 1
+
+    predictX { slope = -1, intercept = 0 } 5.5
+        --> -5.5
+
+-}
+predictX : Line -> Float -> Float
+predictX { slope, intercept } y =
+    (y - intercept) / slope
 
 
 {-| a trend calculated from [`quick`](#quick)
