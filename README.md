@@ -4,6 +4,7 @@ Generate trend lines from point data.
 
 ## Changelog
 
+- **2.1.0:** Add `predictX`
 - **2.0.1:** Fix error in percentile calculation for robust estimation.
 - **2.0.0:** Add robust trendline calculation using Theil-Sen estimators.
 - **1.0.0:** Initial release
