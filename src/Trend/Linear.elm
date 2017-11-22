@@ -108,7 +108,7 @@ type Quick
 {-| Plot a line through a series of points `(x, y)`. So given a
 perfect linear relationship:
 
-     quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, 5) ]
+     quick [ (1, 1), (2, 2), (3, 3), (4, 4) ]
          |> Result.map line
          --> Ok { slope = 1, intercept = 0 }
 
@@ -116,7 +116,6 @@ This is the fastest of the functions in this module, but it's also the
 most susceptible to being thrown off by outliers. Let's look at that
 line again, but with an outlier:
 
-     --                                       vvvvv
      quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, -5) ]
          |> Result.map line
          --> Ok { slope = -0.9999999999999999, intercept = 3.9999999999999996 }
@@ -167,13 +166,12 @@ between 0 to 1. A higher number generally indicates a better fit, but
 it doesn't know anything about what your data _means_. This means that
 you have to use some judgement in interpreting it!
 
-    quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, 5) ]
+    quick [ (1, 1), (2, 2), (3, 3), (4, 4) ]
         |> Result.map goodnessOfFit
         --> Ok 1
 
 And again with that outlier from [`quick`](#quick):
 
-     --                                       vvvvv
      quick [ (1, 1), (2, 2), (3, 3), (4, 4), (5, -5) ]
          |> Result.map goodnessOfFit
          --> Ok 0.19999999999999996
@@ -235,13 +233,12 @@ this is to visualize it with `terezka/elm-plot` or something similar.
 
 For good data, we have the same results as [`quick`](#quick):
 
-     robust [ (1, 1), (2, 2), (3, 3), (4, 4), (5, 5) ]
+     robust [ (1, 1), (2, 2), (3, 3), (4, 4) ]
          |> Result.map line
          --> Ok { slope = 1, intercept = 0 }
 
 But when we have outliers, we still get a good result:
 
-     --                                        vvvvv
      robust [ (1, 1), (2, 2), (3, 3), (4, 4), (5, -5) ]
          |> Result.map line
          --> Ok { slope = 1, intercept = 0 }
