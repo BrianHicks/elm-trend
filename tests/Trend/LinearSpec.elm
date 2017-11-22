@@ -8,6 +8,17 @@ import Trend.Linear exposing (..)
 import Trend.Math exposing (Error(..))
 
 
+predictYTests : Test
+predictYTests =
+    describe "predictY"
+        [ fuzz2 Fuzz.float Fuzz.float "at x=1" <|
+            \slope intercept ->
+                Expect.equal
+                    (slope + intercept)
+                    (predictY { slope = slope, intercept = intercept } 1)
+        ]
+
+
 quickTest : Test
 quickTest =
     describe "quick"
