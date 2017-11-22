@@ -19,52 +19,62 @@ predictYTests =
         ]
 
 
+standard : (List Point -> Result Error (Trend a)) -> List Test
+standard predictor =
+    [ describe "strong positive correlation" <|
+        [ fuzz Fuzz.float "slope" <|
+            \i ->
+                [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
+                    |> predictor
+                    |> Result.map line
+                    |> Result.map .slope
+                    |> reasonablyCloseTo 1
+        , fuzz Fuzz.float "intercept" <|
+            \i ->
+                [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
+                    |> predictor
+                    |> Result.map line
+                    |> Result.map .intercept
+                    |> reasonablyCloseTo 0
+        ]
+    , describe "strong negative correlation" <|
+        [ fuzz (Fuzz.floatRange -1.0e6 1.0e6) "slope" <|
+            \i ->
+                [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
+                    |> predictor
+                    |> Result.map line
+                    |> Result.map .slope
+                    |> reasonablyCloseTo -1
+        , fuzz (Fuzz.floatRange -1.0e6 1.0e6) "intercept" <|
+            \i ->
+                [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
+                    |> predictor
+                    |> Result.map line
+                    |> Result.map .intercept
+                    |> reasonablyCloseTo (i * 2)
+        ]
+    , fuzz Fuzz.float "no correlation" <|
+        \i ->
+            [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
+                |> predictor
+                |> Result.map line
+                |> Expect.equal
+                    (if i == 0 then
+                        Err AllZeros
+                     else
+                        Ok { slope = 0, intercept = 0 }
+                    )
+    ]
+
+
 quickTest : Test
 quickTest =
-    describe "quick"
-        [ describe "strong positive correlation" <|
-            [ fuzz Fuzz.float "slope" <|
-                \i ->
-                    [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
-                        |> quick
-                        |> Result.map line
-                        |> Result.map .slope
-                        |> reasonablyCloseTo 1
-            , fuzz Fuzz.float "intercept" <|
-                \i ->
-                    [ ( i, i ), ( i + 1, i + 1 ), ( i + 2, i + 2 ) ]
-                        |> quick
-                        |> Result.map line
-                        |> Result.map .intercept
-                        |> reasonablyCloseTo 0
-            ]
-        , describe "strong negative correlation" <|
-            [ fuzz (Fuzz.floatRange -1.0e6 1.0e6) "slope" <|
-                \i ->
-                    [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
-                        |> quick
-                        |> Result.map line
-                        |> Result.map .slope
-                        |> reasonablyCloseTo -1
-            , fuzz (Fuzz.floatRange -1.0e6 1.0e6) "intercept" <|
-                \i ->
-                    [ ( i - 1, i + 1 ), ( i, i ), ( i + 1, i - 1 ) ]
-                        |> quick
-                        |> Result.map line
-                        |> Result.map .intercept
-                        |> reasonablyCloseTo (i * 2)
-            ]
-        , fuzz Fuzz.float "no correlation" <|
-            \i ->
-                quick [ ( 0, i ), ( i, 0 ), ( 0, -i ), ( -i, 0 ) ]
-                    |> Result.map line
-                    |> Expect.equal
-                        (if i == 0 then
-                            Err AllZeros
-                         else
-                            Ok { slope = 0, intercept = 0 }
-                        )
-        ]
+    describe "quick" (standard quick)
+
+
+robustTest : Test
+robustTest =
+    describe "robust" (standard robust)
 
 
 goodnessOfFitTests : Test
