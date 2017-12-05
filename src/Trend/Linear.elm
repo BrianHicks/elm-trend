@@ -281,20 +281,27 @@ robust values =
                             (\( x, y ) acc ->
                                 List.foldl
                                     (\( x1, y1 ) acc ->
-                                        if x == x1 then
+                                        let
+                                            res =
+                                                (y - y1) / (x - x1)
+                                        in
+                                        if isNaN res then
                                             acc
                                         else
-                                            (y - y1) / (x - x1) :: acc
+                                            res :: acc
                                     )
                                     acc
                                     values
                             )
                             []
                         |> List.sort
+
+                finiteSlopes =
+                    List.filter (not << isInfinite) slopes
             in
             Maybe.map3
                 (\line lower upper -> Trend line (Robust lower upper))
-                (theilSenLine 0.5 slopes values)
+                (theilSenLine 0.5 finiteSlopes values)
                 (theilSenLine 0.975 slopes values)
                 (theilSenLine 0.025 slopes values)
                 -- I *think* AllZeros is the correct error here, but I'm not 100% on it.
