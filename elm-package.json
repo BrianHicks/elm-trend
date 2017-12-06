@@ -1,5 +1,5 @@
 {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "summary": "generate trend lines for two-dimensional data",
     "repository": "https://github.com/BrianHicks/elm-trend.git",
     "license": "BSD3",
