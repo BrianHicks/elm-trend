@@ -15,13 +15,13 @@ module Trend.Linear
         )
 
 {-| Calculate trends for linear data (that is, data with one dependent
-and one independent variable whose relationship can be described a `y
+and one independent variable whose relationship can be described as `y
 = mx + b`)
 
 The easiest way to determine if a relationship is linear is to plot of
-your values . If your data form a rough line, we're in business. But
-if your plot shows a curve or a random point cloud then don't trust
-the results you get from these functions. (n.b. check out
+your values. If your data form a rough line, we're in business. But if
+your plot shows a curve or a random point cloud then don't trust the
+results you get from these functions. (n.b. check out
 `terezka/elm-plot`, which makes this very easy!)
 
 Some kinds of data which fit these criteria:
@@ -32,9 +32,9 @@ Some kinds of data which fit these criteria:
     once?
   - Big sociological questions: does an increase in healthcare
     spending lead to longer life expectancy? How much does
-    socioeconomic status depend on education levels?
+    education level depend on socioeconomic status?
 
-@docs Trend, Quick, Robust
+@docs Trend
 
 
 ## Using Trend Lines
@@ -49,24 +49,28 @@ Some kinds of data which fit these criteria:
 
 ## Quick Fit
 
-@docs quick, goodnessOfFit
+@docs Quick, quick, goodnessOfFit
 
 
 ## Robust Fit
 
-@docs robust, confidenceInterval
+@docs Robust, robust, confidenceInterval
 
 -}
 
 import Trend.Math as Math exposing (Error(..))
 
 
-{-| -}
+{-| A trend generated from your data. This contains various things you
+may want, like [`line`](#line)s. Generate these with [`quick`](#quick)
+and [`robust`](#robust). You will have different options for
+interpretation depending on which method you choose to calculate.
+-}
 type Trend kind
     = Trend Line kind
 
 
-{-| a single 2-dimensional point
+{-| A single 2-dimensional point `(x, y)`.
 -}
 type alias Point =
     ( Float, Float )
@@ -79,7 +83,7 @@ type alias Line =
     { slope : Float, intercept : Float }
 
 
-{-| Extract a line from a trend.
+{-| Retrieve the calculated trend line.
 -}
 line : Trend a -> Line
 line (Trend precalculated _) =
@@ -114,14 +118,13 @@ predictX { slope, intercept } y =
     (y - intercept) / slope
 
 
-{-| a trend calculated from [`quick`](#quick)
+{-| A trend calculated from [`quick`](#quick).
 -}
 type Quick
     = Quick (List Point)
 
 
-{-| Plot a line through a series of points `(x, y)`. So given a
-perfect linear relationship:
+{-| Plot a line through a series of points `(x, y)`:
 
      quick [ (1, 1), (2, 2), (3, 3), (4, 4) ]
          |> Result.map line
@@ -135,9 +138,10 @@ line again, but with an outlier:
          |> Result.map line
          --> Ok { slope = -0.9999999999999999, intercept = 3.9999999999999996 }
 
-The more outliers you have, the worse fit you'll get. You can figure
-out if this is happening by sending your the result of this function
-to [`goodnessOfFit`](#goodnessOfFit).
+We went from a _perfect_ fit to a _horrible_ one! And, the more
+outliers you have, the worse fit you'll get. You can get one measure
+of goodness by sending your the result of this function to
+[`goodnessOfFit`](#goodnessOfFit).
 
 Under the covers, this is an [ordinary least squares
 regression](https://en.wikipedia.org/wiki/Ordinary_least_squares).
@@ -176,10 +180,11 @@ quick values =
                 |> Result.map (\line -> Trend line (Quick values))
 
 
-{-| Get the goodness of fit for a quick trend. This is a number
-between 0 to 1. A higher number generally indicates a better fit, but
-it doesn't know anything about what your data _means_. This means that
-you have to use some judgement in interpreting it!
+{-| Get the goodness of fit for a quick trend. This is a percent,
+represented as a floating point number between 0 and 1. A higher
+number generally indicates a better fit, but it doesn't know anything
+about what your data _means_. This means that you have to use some
+judgement in interpreting it!
 
     quick [ (1, 1), (2, 2), (3, 3), (4, 4) ]
         |> Result.map goodnessOfFit
@@ -199,8 +204,8 @@ Theil-Sen estimator we use for [`robust`](#robust)
 **Maintainer's note:** this will evaluate the fit for the original
 data. If you need to evaluate goodness of fit for _new_ data given an
 existing `Trend`, we'll need to expose a new function. I don't have a
-concrete use case for this, so the function does not corrently
-exists. I want to make this library work for you, so please [open an
+concrete use case for this, so the function does not exist yet. I want
+to make this library work for you, so please [open an
 issue](https://github.com/BrianHicks/elm-trend/issues/new) if you find
 yourself in this situation!
 
@@ -233,7 +238,7 @@ goodnessOfFit (Trend fit (Quick values)) =
     1 - sumSquareResiduals / sumSquareTotal
 
 
-{-| a trend calculated from [`robust`](#robust)
+{-| A trend calculated from [`robust`](#robust).
 -}
 type Robust
     = Robust Line Line
@@ -243,8 +248,9 @@ type Robust
 instead of the quick estimator. This is much slower (it runs roughly
 in `O(n^2)` time), but will still give good results in the face of
 corrupted data. Specifically, it will still work if up to ~29.3% of
-your data consists of outliers. And again, the easiest way to check
-this is to visualize it with `terezka/elm-plot` or something similar.
+your data consists of outliers. Again, the easiest way to check this
+is to visualize it. We can provide automated checks, but humans are
+still the best at saying "hmm, something's funny here..."
 
 For good data, we have the same results as [`quick`](#quick):
 
@@ -346,7 +352,7 @@ percentile k xs =
 
 {-| Calculate a confidence interval from a robust set of
 data. [Consult
-WikiPedia](https://en.wikipedia.org/wiki/Confidence_interval) for a
+Wikipedia](https://en.wikipedia.org/wiki/Confidence_interval) for a
 thorough understanding of what this may mean for your data set. This
 function gives a 95% confidence interval.
 
