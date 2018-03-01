@@ -96,7 +96,7 @@ correlation values =
                 standardize : Result Error Float -> Result Error Float -> List Float -> Result Error (List Float)
                 standardize meanResult stddevResult series =
                     Result.map2
-                        (\mean stddev -> List.map (\point -> (point - mean) / stddev) series)
+                        (\unwrappedMean unwrappedStddev -> List.map (\point -> (point - unwrappedMean) / unwrappedStddev) series)
                         meanResult
                         stddevResult
 

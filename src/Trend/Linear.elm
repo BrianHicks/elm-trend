@@ -171,13 +171,13 @@ quick values =
                         (Math.stddev xs)
 
                 intercept =
-                    Result.map3 (\meanY slope meanX -> meanY - slope * meanX)
+                    Result.map3 (\meanY unwrappedSlope meanX -> meanY - unwrappedSlope * meanX)
                         (Math.mean ys)
                         slope
                         (Math.mean xs)
             in
             Result.map2 Line slope intercept
-                |> Result.map (\line -> Trend line (Quick values))
+                |> Result.map (\unwrappedLine -> Trend unwrappedLine (Quick values))
 
 
 {-| Get the goodness of fit for a quick trend. This is a percent,
@@ -284,19 +284,19 @@ robust values =
                 slopes =
                     values
                         |> List.foldl
-                            (\( x, y ) acc ->
+                            (\( x, y ) level1 ->
                                 List.foldl
-                                    (\( x1, y1 ) acc ->
+                                    (\( x1, y1 ) level2 ->
                                         let
                                             res =
                                                 (y - y1) / (x - x1)
                                         in
                                         if isNaN res then
-                                            acc
+                                            level2
                                         else
-                                            res :: acc
+                                            res :: level2
                                     )
-                                    acc
+                                    level1
                                     values
                             )
                             []
@@ -306,7 +306,7 @@ robust values =
                     List.filter (not << isInfinite) slopes
             in
             Maybe.map3
-                (\line lower upper -> Trend line (Robust lower upper))
+                (\unwrappedLine lower upper -> Trend unwrappedLine (Robust lower upper))
                 (theilSenLine 0.5 finiteSlopes values)
                 (theilSenLine 0.975 slopes values)
                 (theilSenLine 0.025 slopes values)
