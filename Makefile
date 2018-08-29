@@ -16,10 +16,7 @@ documentation.json: ${SRC_FILES} node_modules
 
 .PHONY: test
 test: tests/Doc node_modules
-	# Cleanup the tests after elm-verify-examples to work around
-	# https://github.com/stoeffel/elm-verify-examples/issues/74
-	rm -rf elm-stuff/generated-code/elm-explorations/test/elm-stuff
-	node_modules/.bin/elm-test --compiler node_modules/.bin/elm
+	node_modules/.bin/elm-test
 
 tests/Doc: ${SRC_FILES} tests/elm-verify-examples.json node_modules
 	rm -rf $@
