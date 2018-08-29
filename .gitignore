@@ -2,5 +2,4 @@ elm-stuff
 documentation.json
 tests/Doc
 node_modules
-.DS_Store
 package-lock.json
