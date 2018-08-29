@@ -16,9 +16,9 @@ documentation.json: ${SRC_FILES} node_modules
 
 .PHONY: test
 test: tests/Doc node_modules
-	node_modules/.bin/elm-test
+	node_modules/.bin/elm-test --compiler=node_modules/.bin/elm
 
 tests/Doc: ${SRC_FILES} tests/elm-verify-examples.json node_modules
 	rm -rf $@
-	node_modules/.bin/elm-verify-examples
+	node_modules/.bin/elm-verify-examples --elm-test-args="--compiler=node_modules/.bin/elm"
 	touch -m $@
