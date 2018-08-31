@@ -1,18 +1,10 @@
-module Trend.Linear
-    exposing
-        ( Line
-        , Point
-        , Quick
-        , Robust
-        , Trend
-        , confidenceInterval
-        , goodnessOfFit
-        , line
-        , predictX
-        , predictY
-        , quick
-        , robust
-        )
+module Trend.Linear exposing
+    ( Trend
+    , Line, line, predictY, predictX
+    , Point
+    , Quick, quick, goodnessOfFit
+    , Robust, robust, confidenceInterval
+    )
 
 {-| Calculate trends for linear data (that is, data with one dependent
 and one independent variable whose relationship can be described as `y
@@ -95,8 +87,8 @@ line (Trend precalculated _) =
     predictY { slope = 1, intercept = 0 } 1
         --> 1
 
-    predictY { slope = -1, intercept = 0 } 5.5
-        --> -5.5
+    predictY { slope = -1, intercept = 0 } 5.5 |> Ok
+        --> Ok -5.5
 
 -}
 predictY : Line -> Float -> Float
@@ -109,8 +101,8 @@ predictY { slope, intercept } x =
     predictX { slope = 1, intercept = 0 } 1
         --> 1
 
-    predictX { slope = -1, intercept = 0 } 5.5
-        --> -5.5
+    predictX { slope = -1, intercept = 0 } 5.5 |> Ok
+        --> Ok -5.5
 
 -}
 predictX : Line -> Float -> Float
@@ -164,7 +156,7 @@ quick values =
                 ( xs, ys ) =
                     List.unzip values
 
-                slope =
+                slopeResult =
                     Result.map3 (\correl stddevY stddevX -> correl * stddevY / stddevX)
                         (Math.correlation values)
                         (Math.stddev ys)
@@ -173,11 +165,11 @@ quick values =
                 intercept =
                     Result.map3 (\meanY slope meanX -> meanY - slope * meanX)
                         (Math.mean ys)
-                        slope
+                        slopeResult
                         (Math.mean xs)
             in
-            Result.map2 Line slope intercept
-                |> Result.map (\line -> Trend line (Quick values))
+            Result.map2 Line slopeResult intercept
+                |> Result.map (\trendLine -> Trend trendLine (Quick values))
 
 
 {-| Get the goodness of fit for a quick trend. This is a percent,
@@ -284,19 +276,20 @@ robust values =
                 slopes =
                     values
                         |> List.foldl
-                            (\( x, y ) acc ->
+                            (\( x, y ) acc1 ->
                                 List.foldl
-                                    (\( x1, y1 ) acc ->
+                                    (\( x1, y1 ) acc2 ->
                                         let
                                             res =
                                                 (y - y1) / (x - x1)
                                         in
                                         if isNaN res then
-                                            acc
+                                            acc2
+
                                         else
-                                            res :: acc
+                                            res :: acc2
                                     )
-                                    acc
+                                    acc1
                                     values
                             )
                             []
@@ -306,7 +299,7 @@ robust values =
                     List.filter (not << isInfinite) slopes
             in
             Maybe.map3
-                (\line lower upper -> Trend line (Robust lower upper))
+                (\trendLine lower upper -> Trend trendLine (Robust lower upper))
                 (theilSenLine 0.5 finiteSlopes values)
                 (theilSenLine 0.975 slopes values)
                 (theilSenLine 0.025 slopes values)
@@ -342,6 +335,7 @@ percentile k xs =
         xs
             |> List.drop (ceiling index - 1)
             |> List.head
+
     else
         xs
             |> List.drop (floor index - 1)

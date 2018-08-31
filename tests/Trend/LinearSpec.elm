@@ -1,6 +1,6 @@
-module Trend.LinearSpec exposing (..)
+module Trend.LinearSpec exposing (goodnessOfFitTests, predictXTests, predictYTests, quickTest, robustTest, standard)
 
-import Expect
+import Expect exposing (FloatingPointTolerance(..))
 import Fuzz
 import Helpers exposing (reasonablyCloseTo)
 import Test exposing (..)
@@ -13,7 +13,7 @@ predictYTests =
     describe "predictY"
         [ fuzz2 Fuzz.float Fuzz.float "at x=1" <|
             \slope intercept ->
-                Expect.equal
+                Expect.within (Absolute 0.0000001)
                     (slope + intercept)
                     (predictY { slope = slope, intercept = intercept } 1)
         ]
@@ -24,7 +24,7 @@ predictXTests =
     describe "predictX"
         [ fuzz2 Fuzz.float Fuzz.float "at y=1" <|
             \slope intercept ->
-                Expect.equal
+                Expect.within (Absolute 0.0000001)
                     ((1 - intercept) / slope)
                     (predictX { slope = slope, intercept = intercept } 1)
         ]
@@ -72,6 +72,7 @@ standard predictor =
                 |> Expect.equal
                     (if i == 0 then
                         Err AllZeros
+
                      else
                         Ok { slope = 0, intercept = 0 }
                     )
@@ -103,6 +104,7 @@ goodnessOfFitTests =
                     |> Expect.equal
                         (if i == 0 then
                             Err AllZeros
+
                          else
                             Ok 0
                         )

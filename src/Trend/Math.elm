@@ -1,10 +1,7 @@
-module Trend.Math
-    exposing
-        ( Error(..)
-        , correlation
-        , mean
-        , stddev
-        )
+module Trend.Math exposing
+    ( Error(..)
+    , mean, stddev, correlation
+    )
 
 {-| Math helpers for calculating trends.
 
@@ -48,8 +45,8 @@ mean numbers =
 
 {-| Calculate the standard deviation for some values.
 
-    mean [ 1, 2, 3, 4, 5 ]
-        --> Ok 3
+    stddev [ 1, 2, 3, 4, 5 ]
+        --> Ok 1.4142135623730951
 
 -}
 stddev : List Float -> Result Error Float
@@ -96,7 +93,7 @@ correlation values =
                 standardize : Result Error Float -> Result Error Float -> List Float -> Result Error (List Float)
                 standardize meanResult stddevResult series =
                     Result.map2
-                        (\mean stddev -> List.map (\point -> (point - mean) / stddev) series)
+                        (\meanValue stddevValue -> List.map (\point -> (point - meanValue) / stddevValue) series)
                         meanResult
                         stddevResult
 
@@ -113,6 +110,7 @@ correlation values =
                     (\val ->
                         if isNaN val then
                             Err AllZeros
+
                         else
                             Ok val
                     )

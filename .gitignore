@@ -1,4 +1,5 @@
-elm-stuff/
+elm-stuff
 documentation.json
 tests/Doc
 node_modules
+package-lock.json
